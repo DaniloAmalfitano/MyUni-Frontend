@@ -55,24 +55,21 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 export const api = {
   health: () => request<{ status: string }>('/health'),
 
-  login: async (data: LoginRequest): Promise<LoginResponse> => {
-    const result = await request<LoginResponse>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    })
-    setSessionId(result.sessionId)
-    return result
-  },
-
   logout: async (): Promise<void> => {
     await request<void>('/auth/logout', { method: 'POST' })
     setSessionId(null)
   },
 
-  connect: (username: string, password: string) => request<{ message: string }>('/segrepass/connect', {
-  method: 'POST',
-  body: JSON.stringify({ username, password }),
-}),
+  connect: async (username: string, password: string) => {
+    const result = await request<{ message: string; sessionId: string }>('/segrepass/connect', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+  })
+
+  setSessionId(result.sessionId)
+
+  return result
+},
 
 
 getStudentSummary: () => request<{ studentSummary: StudentSummary[] }>('/segrepass/student-summary'),

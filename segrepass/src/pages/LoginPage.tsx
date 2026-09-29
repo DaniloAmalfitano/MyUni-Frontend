@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 
 export function LoginPage() {
   const navigate = useNavigate()
-  const { login } = useAuth()
+  const { connectSegrepass } = useAuth()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -19,8 +19,8 @@ export function LoginPage() {
     if (!password) { setError('Inserisci la tua password'); return }
     setLoading(true)
     try {
-      await login(username, password)
-      navigate('/connect')
+      await connectSegrepass(username, password)
+      navigate('/dashboard')
     } catch (err: any) {
       if (err?.status === 401) setError('Credenziali non valide. Controlla username e password.')
       else setError('Errore di connessione. Riprova più tardi.')
