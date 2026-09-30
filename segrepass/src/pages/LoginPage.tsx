@@ -31,16 +31,13 @@ export function LoginPage() {
 
     try {
       await connectSegrepass(username, password)
-
+      setPassword('')
       navigate('/dashboard')
     } catch (err: any) {
       if (err?.status === 401) {
+        setPassword('')
         setError(
           'Credenziali non valide. Controlla username e password.'
-        )
-      } else if (err?.status === 409) {
-        setError(
-          'Questo account ha già una sessione attiva.'
         )
       } else {
         setError(
