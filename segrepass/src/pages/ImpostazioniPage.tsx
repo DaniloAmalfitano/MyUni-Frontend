@@ -1,19 +1,69 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Moon, Sun, LogOut, User, AlertCircle } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { StatusBadge } from '../components/StatusBadge'
+import { api } from '../api/client'
+import { CardSkeleton } from '../components/Skeleton'
 
 export function ImpostazioniPage() {
   const navigate = useNavigate()
   const { userName, connectionStatus, logout } = useAuth()
+  const [studentId, setStudentId] = useState<string | null>(null)
+  const [degreeCourse, setDegreeCourse] = useState<string | null>(null)
   const { theme, toggleTheme } = useTheme()
   const [showLogoutDialog, setShowLogoutDialog] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const handleLogout = async () => { setLoggingOut(true); try { await logout(); navigate('/login') } catch { navigate('/login') } }
 
+  useEffect(() => {
+    let cancelled = false
+
+    async function fetchData() {
+      try {
+        const [degreeCourse, studentId] = await Promise.all([
+          api.getDegreeCourse(),
+          api.getStudentId(),
+        ])
+
+        if (!cancelled) {
+          setStudentId(studentId)
+          setDegreeCourse(degreeCourse)
+        }
+      } catch {
+        if (!cancelled) {
+          setStudentId(null)
+          setDegreeCourse(null)
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    fetchData()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+    if (loading) {
+      return (
+        <div className="space-y-6">
+          <div className="h-8 w-64 skeleton rounded-lg" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)}
+          </div>
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+      )
+    }
   return (
     <div className="space-y-6 relative">
       <div><h1 className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Impostazioni</h1><p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>Gestisci il tuo account e le preferenze</p></div>
@@ -21,7 +71,7 @@ export function ImpostazioniPage() {
         <h2 className="text-base font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>Account</h2>
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center"><User size={24} className="text-primary-600 dark:text-primary-400" /></div>
-          <div><p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{userName || 'Marco Rossi'}</p><p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Matricola: N86004123</p><p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Informatica — Triennale</p></div>
+          <div><p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{userName || 'Nessun nome trovato'}</p><p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Matricola: {studentId || 'Nessuna Matricola trovata'}</p><p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Corso: {degreeCourse || 'Nessun corso trovato'}</p></div>
         </div>
       </div>
       <div className="rounded-2xl p-6 shadow-sm border" style={{ backgroundColor: 'var(--color-bg-card)', borderColor: 'var(--color-border)' }}>

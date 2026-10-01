@@ -81,23 +81,37 @@ getTranscript: async (): Promise<TranscriptEntry[]> => {
 
 //getStudyPlan: () => request<StudyPlanEntry[]>('/segrepass/study-plan'),
   getStudyPlan: async (): Promise<StudyPlanEntry[]> => {
-  const res = await request<{ pianoDiStudi: any[] }>('/segrepass/study-plan')
-  
-  const mapAnnoToNumber = (anno: string | number): number => {
-    if (typeof anno === 'number') return anno
-    const normalizzato = String(anno).trim().toUpperCase()
-    if (normalizzato.includes('PRIM') || normalizzato === '1' || normalizzato === 'I') return 1
-    if (normalizzato.includes('SECOND') || normalizzato === '2' || normalizzato === 'II') return 2
-    if (normalizzato.includes('TERZ') || normalizzato === '3' || normalizzato === 'III') return 3
-    return 1
-  }
+    const res = await request<{ pianoDiStudi: any[] }>('/segrepass/study-plan')
+    
+    const mapAnnoToNumber = (anno: string | number): number => {
+      if (typeof anno === 'number') return anno
+      const normalizzato = String(anno).trim().toUpperCase()
+      if (normalizzato.includes('PRIM') || normalizzato === '1' || normalizzato === 'I') return 1
+      if (normalizzato.includes('SECOND') || normalizzato === '2' || normalizzato === 'II') return 2
+      if (normalizzato.includes('TERZ') || normalizzato === '3' || normalizzato === 'III') return 3
+      return 1
+    }
 
-  return (res.pianoDiStudi || []).map(item => ({
-    ...item,
-    annoCorso: mapAnnoToNumber(item.annoCorso)
-  }))
-},
+    return (res.pianoDiStudi || []).map(item => ({
+      ...item,
+      annoCorso: mapAnnoToNumber(item.annoCorso)
+    }))
+  },
 
+  getStudentName: async (): Promise<string> => {
+    const res = await request<{ studentName: string }>('/segrepass/student-name')
+    return res.studentName   
+  },
+
+  getStudentId: async (): Promise<string> => {
+    const res = await request<{ studentId: string }>('/segrepass/student-id')
+    return res.studentId   
+  },
+  getDegreeCourse: async (): Promise<string> => {
+    const res = await request<{ degreeCourse: string }>('/segrepass/degree-course')
+    return res.degreeCourse   
+  },
 }
+
 
 

@@ -10,7 +10,7 @@ import { mockSummary, mockTranscript } from '../api/mockData'
 import type { StudentSummary, TranscriptEntry } from '../types'
 
 export function DashboardPage() {
-  const { userName } = useAuth()
+  const [studentName, setStudentName] = useState<string | null>(null)
   const [summary, setSummary] = useState<StudentSummary | null>(null)
   const [recentExams, setRecentExams] = useState<TranscriptEntry[]>([])
   const [loading, setLoading] = useState(true)
@@ -20,11 +20,13 @@ export function DashboardPage() {
     async function fetchData() {
       setLoading(true)
       try {
-        const [summaryData, transcriptData] = await Promise.all(
+        const [summaryData, transcriptData, studentName] = await Promise.all(
           [
             api.getStudentSummary(),
             api.getTranscript(),
+            api.getStudentName()
           ])
+        setStudentName(studentName)
         setSummary(summaryData.studentSummary[0])
         setRecentExams(transcriptData.slice(0,5))
       } catch {
@@ -68,7 +70,7 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>{greeting()}, {userName || 'Marco'} 👋</h1>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>{greeting()}, {studentName || 'Marco'} 👋</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>Ecco un riepilogo della tua carriera universitaria</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
